@@ -47,7 +47,7 @@ export const resendEmailVerificationService = async (email: string) => {
 
 export const refreshTokenService = async (refreshToken: string) => {
   try {
-    const response = await api.post("/api/auth/v1/refres-token", {
+    const response = await api.post("/api/auth/v1/refresh-token", {
       refreshToken,
     });
     return response.data;

@@ -102,13 +102,25 @@ api.interceptors.response.use(
         }
 
         try {
-          // Import refreshTokenService dynamically to avoid circular dependency
-          const { refreshTokenService } = await import("@/services/auth");
-          const response = await refreshTokenService(refreshToken);
+          // Make direct axios call to avoid interceptor loop
+          // Using a fresh axios instance without interceptors
+          const refreshResponse = await axios.post(
+            `${api.defaults.baseURL}/api/auth/v1/refresh-token`,
+            { refreshToken },
+            {
+              headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json",
+              },
+              withCredentials: true,
+            }
+          );
 
-          if (response.status === "success" && response.data?.tokens) {
-            const newAccessToken = response.data.tokens.accessToken;
-            const newRefreshToken = response.data.tokens.refreshToken;
+          const responseData = refreshResponse.data;
+
+          if (responseData.status === "success" && responseData.data?.tokens) {
+            const newAccessToken = responseData.data.tokens.accessToken;
+            const newRefreshToken = responseData.data.tokens.refreshToken;
 
             // Update tokens in localStorage
             localStorage.setItem("accessToken", newAccessToken);

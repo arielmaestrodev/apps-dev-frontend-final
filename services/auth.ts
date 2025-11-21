@@ -56,3 +56,26 @@ export const refreshTokenService = async (refreshToken: string) => {
     throw error;
   }
 };
+
+export const initiateOAuth = (provider: "google" | "github") => {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  const redirectUrl = typeof window !== "undefined" 
+    ? `${window.location.origin}/oauth-callback`
+    : "";
+  
+  // Include redirect URL as query parameter for backend to redirect back
+  const oauthUrl = `${apiUrl}/api/auth/v1/${provider}${redirectUrl ? `?redirect=${encodeURIComponent(redirectUrl)}` : ""}`;
+  window.location.href = oauthUrl;
+};
+
+export const exchangeOAuthCode = async (code: string) => {
+  try {
+    const response = await api.get("/api/auth/v1/oauth/exchange", {
+      params: { code },
+    });
+    return response.data;
+  } catch (error) {
+    console.error(error);
+    throw error;
+  }
+};

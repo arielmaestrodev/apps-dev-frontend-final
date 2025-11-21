@@ -1,13 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 
 import { useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 
-import { Github, Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff } from "lucide-react";
+import { OAuthButtons } from "@/components/auth/oauth-buttons";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -115,14 +115,7 @@ export function LoginForm() {
           <div className="flex items-center justify-center">
             <p className="text-sm text-gray-500">Or continue with</p>
           </div>
-          <Button type="button" className="w-full" size="lg" variant="outline">
-            <Image src="/google.webp" alt="Google" width={18} height={18} />
-            Continue with Google
-          </Button>
-          <Button type="button" className="w-full" size="lg" variant="outline">
-            <Github className="w-4 h-4" />
-            Continue with GitHub
-          </Button>
+          <OAuthButtons />
         </form>
       </Form>
     </div>

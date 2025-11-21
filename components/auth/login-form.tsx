@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import Link from "next/link";
 import Image from "next/image";
@@ -12,36 +12,46 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
-import { Spinner } from "@/components/ui/spinner"
+import { Spinner } from "@/components/ui/spinner";
 
-import { signupValidator, SignupSchema } from "@/components/auth/schemas/validators";
-import { signupService } from "@/services/auth";
+import { loginValidator, LoginSchema } from "@/components/auth/schemas/validators";
+import { loginService } from "@/services/auth";
 import { toast } from "sonner";
 import { apiErrorHandler } from "@/lib/axios";
 import { AxiosError } from "axios";
 import { useRouter } from "next/navigation";
 
-export function SignupForm() {
+export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
 
-  const form = useForm<SignupSchema>({
-    resolver: zodResolver(signupValidator),
+  const form = useForm<LoginSchema>({
+    resolver: zodResolver(loginValidator),
     defaultValues: {
-      name: "",
       email: "",
       password: "",
     },
   });
 
   // Handle form submission
-  async function onSubmit(values: SignupSchema) {
+  async function onSubmit(values: LoginSchema) {
     try {
-      const response = await signupService(values);
+      const response = await loginService(values);
       
-      if (response.status === "success") {
-        toast.success("Account created successfully");
-        router.push(`/verify-email?email=${encodeURIComponent(values.email)}`);
+      if (response.status === "success" && response.data) {
+        // Store tokens in localStorage
+        if (response.data.tokens) {
+          localStorage.setItem("accessToken", response.data.tokens.accessToken);
+          localStorage.setItem("refreshToken", response.data.tokens.refreshToken);
+        }
+        
+        // Store user data if needed
+        if (response.data.user) {
+          localStorage.setItem("user", JSON.stringify(response.data.user));
+        }
+
+        toast.success(response.message || "Login successful");
+        router.push("/");
         form.reset();
       }
       
@@ -55,23 +65,12 @@ export function SignupForm() {
     <div className="w-full">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          {/* Full Name Field */}
-          <FormField control={form.control} name="name" render={({ field }) => (
-            <FormItem>
-              <FormLabel>Full Name</FormLabel>
-              <FormControl>
-                <Input placeholder="Full Name" {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )} />
-
           {/* Email Field */}
           <FormField control={form.control} name="email" render={({ field }) => (
             <FormItem>
               <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input placeholder="Email" {...field} />
+                <Input type="email" placeholder="Email" {...field} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -98,26 +97,29 @@ export function SignupForm() {
             {form.formState.isSubmitting ? (
               <>
                 <Spinner />
-                Creating Account...
+                Logging in...
               </>
             ) : (
-              "Create Account"
+              "Login"
             )}
           </Button>
 
-          <div className="flex items-center justify-center"> <p className="text-sm text-gray-500">Already have an account? {` `}
-            <Link href="/login" className="text-primary underline-offset-4 hover:underline">Login</Link></p>
+          <div className="flex items-center justify-center">
+            <p className="text-sm text-gray-500">
+              Don't have an account? {` `}
+              <Link href="/signup" className="text-primary underline-offset-4 hover:underline">Sign up</Link>
+            </p>
           </div>
 
           <Separator />
           <div className="flex items-center justify-center">
             <p className="text-sm text-gray-500">Or continue with</p>
           </div>
-          <Button type="submit" className="w-full" size="lg" variant="outline">
+          <Button type="button" className="w-full" size="lg" variant="outline">
             <Image src="/google.webp" alt="Google" width={18} height={18} />
             Continue with Google
           </Button>
-          <Button type="submit" className="w-full" size="lg" variant="outline">
+          <Button type="button" className="w-full" size="lg" variant="outline">
             <Github className="w-4 h-4" />
             Continue with GitHub
           </Button>
